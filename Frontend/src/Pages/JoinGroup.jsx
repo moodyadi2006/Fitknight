@@ -464,7 +464,7 @@ const JoinGroup = () => {
 
         const updatedGroups = fetchedGroups.map((group) => {
           // Set the initial loading state or use the current state
-          const groupStatus = loadingState[group._id] || "undone"; // Default to 'undone'
+          const groupStatus = "undone"; // Default to 'undone'
 
           setLoadingState((prevState) => ({
             ...prevState,

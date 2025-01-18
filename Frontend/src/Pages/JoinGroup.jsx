@@ -727,14 +727,8 @@ const JoinGroup = () => {
                 </div>
                 {loggedInUser._id !== group.organizer._id && (
                   <div className="mt-4">
-                    {/* Show message when the user is already a member */}
-                    {group.isMember && !loadingState[group._id] && (
-                      <p className="text-green-600">
-                        You are already a Member!
-                      </p>
-                    )}
                     {/* Undo Request button */}
-                    {!group.isMember &&
+                    {group &&
                       loadingState[group._id] === "pending" && (
                         <button
                           onClick={() => undoRequestHandler(group._id)}
@@ -744,7 +738,7 @@ const JoinGroup = () => {
                         </button>
                       )}
                     {/* Send Request button */}
-                    {!group.isMember &&
+                    {group &&
                       loadingState[group._id] !== "accepted" &&
                       loadingState[group._id] !== "pending" &&
                       (loadingState[group._id] === "undone" ||

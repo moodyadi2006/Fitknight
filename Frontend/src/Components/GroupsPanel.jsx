@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -6,6 +6,7 @@ const GroupsPanel = ({ groups, loggedInUser }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [currentGroup, setCurrentGroup] = useState(null);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [requestCount, setRequestCount] = useState(0);
 
   const pendingRequestHandler = async (group) => {
     setCurrentGroup(group);
@@ -37,6 +38,7 @@ const GroupsPanel = ({ groups, loggedInUser }) => {
   };
 
   const handleApprove = async (requestId) => {
+    setRequestCount(0);
     try {
       // Approve the user
       await axios.post(
@@ -56,10 +58,10 @@ const GroupsPanel = ({ groups, loggedInUser }) => {
     } catch (error) {
       console.error("Error approving request:", error);
     }
-    
   };
 
   const handleReject = async (requestId) => {
+    setRequestCount(0);
     try {
       await axios.post(
         `${import.meta.env.VITE_BASE_URL}/groups/rejectRequest/${requestId}`,
@@ -77,6 +79,49 @@ const GroupsPanel = ({ groups, loggedInUser }) => {
       console.error("Error rejecting request:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        // Use `Promise.all` to handle multiple requests concurrently
+        const responses = await Promise.all(
+          groups.map((group) =>
+            axios.get(
+              `${import.meta.env.VITE_BASE_URL}/groups/getRequests/${
+                group._id
+              }`,
+              {
+                params: {
+                  userId: loggedInUser._id,
+                },
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem(
+                    "accessToken"
+                  )}`,
+                },
+              }
+            )
+          )
+        );
+
+        // Calculate total pending requests from all groups
+        const totalPendingRequests = responses.reduce((total, response) => {
+          const pendingRequests = response.data.length || 0; // Assuming response.data contains the array
+          return total + pendingRequests;
+        }, 0);
+
+        setRequestCount(totalPendingRequests); // Update the count directly
+      } catch (error) {
+        console.error("Error fetching pending requests:", error);
+      }
+    };
+
+    fetchPendingRequests();
+
+    // Poll every 60 seconds to check for new requests
+    const interval = setInterval(fetchPendingRequests, 60000);
+    return () => clearInterval(interval); // Clean up the interval on unmount
+  }, [loggedInUser._id, groups]); // Ensure stable dependencies
 
   const closeModal = () => {
     setModalVisible(false);
@@ -169,15 +214,20 @@ const GroupsPanel = ({ groups, loggedInUser }) => {
                     event.stopPropagation(); // Prevent navigation to the group's page
                     pendingRequestHandler(group);
                   }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
                 >
-                  Pending Requests
+                  <span>Pending Requests</span>
+                  {requestCount > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-sm rounded-full w-6 h-6 flex items-center justify-center">
+                      {requestCount}
+                    </span>
+                  )}
                 </button>
               )}
             </div>
           ))
         ) : (
-          <p>Currently No group is joined.</p>
+          <p className="text-gray-500">Currently No group is joined.</p>
         )}
       </div>
 

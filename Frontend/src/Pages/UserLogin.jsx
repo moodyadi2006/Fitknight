@@ -29,6 +29,9 @@ const UserLogin = () => {
           localStorage.setItem("accessToken", data.data.accessToken);
           localStorage.setItem("refreshToken", data.data.refreshToken);
 
+          // if (!data.data.user.isVerified) {
+          //   navigate("/verify");
+          // }
           const userPreference = data.data.user.preference;
           if (userPreference === "FitnessGroup") {
             navigate("/FitnessGroup"); // Redirect to Fitness Group page

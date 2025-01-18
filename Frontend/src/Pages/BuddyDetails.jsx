@@ -15,6 +15,8 @@ import {
 import { BsFillSendFill } from "react-icons/bs";
 import socket from "../Components/socket";
 import { useParams } from "react-router-dom";
+import LoadingPanel from "../Components/LoadingPanel";
+import ErrorPanel from "../Components/ErrorPanel";
 // Connect to the server
 
 const BuddyDetails = () => {
@@ -29,6 +31,9 @@ const BuddyDetails = () => {
   const activeMembers = document.getElementsByClassName("activeMembers");
   const scrollRef = useRef(null);
   const currentTime = new Date().toLocaleTimeString();
+  const [messageCount, setMessageCount] = useState(0);
+  const [newMessage, setNewMessage] = useState(null);
+  const [isVisible, setIsVisible] = useState(false); // Initially false, show only when there's a new message
 
   useEffect(() => {
     const fetchBuddyMessages = async () => {
@@ -44,6 +49,24 @@ const BuddyDetails = () => {
         );
         const data = response.data; // Axios response already parsed
         setAllMessages(data);
+
+        // Get the most recent message
+        const latestMessage = data[data.length - 1];
+
+        // If the latest message is not sent by the logged-in user, it's a new message
+        if (latestMessage && latestMessage.sender !== loggedInUser.username) {
+          setMessageCount((prevCount) => prevCount + 1); // Increase the message count
+          setNewMessage(latestMessage);
+          setIsVisible(true); // Show notification
+
+          // Set the message to disappear after 5 seconds
+          const timeout = setTimeout(() => {
+            setIsVisible(false); // Hide notification after 5 seconds
+          }, 5000);
+
+          // Clean up the timeout on component unmount or re-run
+          return () => clearTimeout(timeout);
+        }
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
@@ -54,9 +77,10 @@ const BuddyDetails = () => {
     if (scrollRef.current) {
       const scrollElement = scrollRef.current;
 
+      // Auto-scroll to the latest message
       scrollElement.scrollTop = scrollElement.scrollHeight;
     }
-  }, []); // Dependency on allMessages
+  }, [loggedInUser.username]);
 
   useEffect(() => {
     socket.on("chatMessage", (message) => {
@@ -186,11 +210,19 @@ const BuddyDetails = () => {
   }, []);
 
   if (loading) {
-    return <p className="text-center text-gray-500">Loading...</p>;
+    return (
+      <div>
+        <LoadingPanel />
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-center text-red-500">Error: {error}</p>;
+    return (
+      <div>
+        <ErrorPanel error={error} />
+      </div>
+    )
   }
 
   return (
@@ -282,11 +314,18 @@ const BuddyDetails = () => {
           )}
         </div>
         <div className="w-2/3 z-20 border-none relative top-0 p-4 h-screen flex flex-col">
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 relative">
             <h2 className="text-white text-3xl font-extrabold">FITCHAT</h2>
             <h4 className="activeMembers text-white text-xs">
               {activeMembers.innerText}
             </h4>
+
+            {messageCount > 0 && isVisible && (
+              <span
+                className="bg-red-500 text-white text-sm rounded-full w-5 h-5 flex items-center justify-center absolute top-0 right-0 transform translate-x-1 translate-y-1 animate-ping"
+                style={{ animationDuration: "1s" }}
+              ></span>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto mb-12" ref={scrollRef}>

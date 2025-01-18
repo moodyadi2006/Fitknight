@@ -2,6 +2,8 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import LoadingPanel from "../Components/LoadingPanel";
+import ErrorPanel from "../Components/ErrorPanel";
 
 const Buddy = () => {
   const [users, setUsers] = useState([]);
@@ -207,7 +209,7 @@ const Buddy = () => {
           params: {
             userId,
             buddyId,
-            status
+            status,
           },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -216,25 +218,32 @@ const Buddy = () => {
       );
       try {
         //Fetch current buddy status
-        const response = response1.data.data.userId === userId ? await axios.get(
-          `${
-            import.meta.env.VITE_BASE_URL
-          }/buddies/getBuddyStatus?buddyId=${buddyId}&userId=${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            },
-          }
-        ) : await axios.get(
-          `${
-            import.meta.env.VITE_BASE_URL
-          }/buddies/getBuddyStatus?buddyId=${userId}&userId=${buddyId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            },
-          }
-        );
+        const response =
+          response1.data.data.userId === userId
+            ? await axios.get(
+                `${
+                  import.meta.env.VITE_BASE_URL
+                }/buddies/getBuddyStatus?buddyId=${buddyId}&userId=${userId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "accessToken"
+                    )}`,
+                  },
+                }
+              )
+            : await axios.get(
+                `${
+                  import.meta.env.VITE_BASE_URL
+                }/buddies/getBuddyStatus?buddyId=${userId}&userId=${buddyId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "accessToken"
+                    )}`,
+                  },
+                }
+              );
 
         const requestStatus = response.data?.status;
 
@@ -467,11 +476,19 @@ const Buddy = () => {
   };
 
   if (loading) {
-    return <div>Loading groups...</div>;
+    return (
+      <div>
+        <LoadingPanel />
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div>
+        <ErrorPanel message={error} />
+      </div>
+    );
   }
 
   return (

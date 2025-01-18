@@ -2,6 +2,8 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import LoadingPanel from "../Components/LoadingPanel";
+import ErrorPanel from "../Components/ErrorPanel";
 
 const JoinGroup = () => {
   const [groups, setGroups] = useState([]);
@@ -101,8 +103,7 @@ const JoinGroup = () => {
           setGroups(validGroups);
 
           // Log rejected responses for debugging
-          responses
-            .filter((response) => response.value.status === "rejected")
+          responses.filter((response) => response.value.status === "rejected");
         },
         (error) => {
           console.error("Error getting location:", error.message);
@@ -506,11 +507,19 @@ const JoinGroup = () => {
   };
 
   if (loading) {
-    return <div>Loading groups...</div>;
+    return (
+      <div>
+        <LoadingPanel />
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div>
+        <ErrorPanel message={error} />
+      </div>
+    );
   }
 
   return (
@@ -668,14 +677,6 @@ const JoinGroup = () => {
                           {group.availableTimeSlot || "No available time Slot."}
                         </span>
                       </p>
-                      <p className="text-sm text-gray-600 mt-1">Rules:</p>
-                      <ul className="list-disc pl-5">
-                        {group.rules.map((rule, index) => (
-                          <li key={index} className="text-sm text-gray-600">
-                            {rule}
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-600 mt-1">
@@ -727,22 +728,15 @@ const JoinGroup = () => {
                 </div>
                 {loggedInUser._id !== group.organizer._id && (
                   <div className="mt-4">
-                    {/* Show message when the user is already a member */}
-                    {group.isMember && !loadingState[group._id] && (
-                      <p className="text-green-600">
-                        You are already a Member!
-                      </p>
-                    )}
                     {/* Undo Request button */}
-                    {group &&
-                      loadingState[group._id] === "pending" && (
-                        <button
-                          onClick={() => undoRequestHandler(group._id)}
-                          className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
-                        >
-                          Undo Request
-                        </button>
-                      )}
+                    {group && loadingState[group._id] === "pending" && (
+                      <button
+                        onClick={() => undoRequestHandler(group._id)}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+                      >
+                        Undo Request
+                      </button>
+                    )}
                     {/* Send Request button */}
                     {group &&
                       loadingState[group._id] !== "accepted" &&

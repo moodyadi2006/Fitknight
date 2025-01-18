@@ -74,10 +74,6 @@ const createFitnessGroupSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
-    rules: {
-      type: [String], // Example: ["Bring your own equipment", "Be punctual"]
-      required: true
-    },
   },
   { timestamps: true },
 );

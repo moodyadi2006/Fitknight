@@ -10,8 +10,10 @@ const MyBuddies = () => {
   const [username, setUsername] = useState();
   const [fullName, setFullName] = useState();
   const [buddies, setBuddies] = useState([]);
+  const [requestCount, setRequestCount] = useState(0);
 
   const handleApprove = async (requestId) => {
+    setRequestCount(0);
     try {
       // Ensure token exists
       const token = localStorage.getItem("accessToken");
@@ -148,6 +150,7 @@ const MyBuddies = () => {
   }, []);
 
   const handleReject = async (requestId) => {
+    setRequestCount(0);
     try {
       await axios.post(
         `${import.meta.env.VITE_BASE_URL}/buddies/rejectRequest/${requestId}`,
@@ -202,6 +205,7 @@ const MyBuddies = () => {
 
   const pendingRequestHandler = async () => {
     setModalVisible(true);
+   
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/buddies/getPendingRequests`,
@@ -214,6 +218,7 @@ const MyBuddies = () => {
           },
         }
       );
+
       // Ensure response.data is an array, then accumulate the requests
       response.data.forEach((buddy) => {
         fetchUserProfile(buddy.userId);
@@ -223,6 +228,38 @@ const MyBuddies = () => {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/buddies/getPendingRequests`,
+          {
+            params: {
+              userId: loggedInUser._id,
+            },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
+
+        console.log(response); // Debugging the response
+
+        // Assuming the pending requests are in response.data.pendingRequests
+        const pendingRequests = response.data.length || [];
+        setRequestCount(pendingRequests); // Update the count directly
+      } catch (error) {
+        console.error("Error fetching pending requests:", error);
+      }
+    };
+
+    fetchPendingRequests();
+
+    // Poll every 10 seconds to check for new requests
+    const interval = setInterval(fetchPendingRequests, 60000);
+    return () => clearInterval(interval); // Clean up the interval on unmount
+  }, [loggedInUser._id]); // Remove `pendingRequests` dependency
 
   const closeModal = () => {
     setModalVisible(false);
@@ -253,10 +290,16 @@ const MyBuddies = () => {
         <div>
           <button
             onClick={pendingRequestHandler}
-            className="px-4 py-2 text-xl bg-blue-600 text-white rounded-xl border-none outline-none"
+            className="px-4 py-2 text-xl bg-blue-600 text-white rounded-xl border-none outline-none flex items-center space-x-2"
           >
-            Pending Requests
+            <span>Pending Requests</span>
+            {requestCount > 0 && (
+              <span className="bg-red-500 text-white text-sm rounded-full w-5 h-5 flex items-center justify-center">
+                {requestCount}
+              </span>
+            )}
           </button>
+
           {modalVisible && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-20">
               <div className="bg-white rounded-lg p-6 shadow-lg max-w-lg w-full">
@@ -345,7 +388,7 @@ const MyBuddies = () => {
             </div>
           ))
         ) : (
-          <p className=" p-5">No buddies available.</p>
+          <p className=" p-5 text-white">No buddies available.</p>
         )}
       </div>
     </div>

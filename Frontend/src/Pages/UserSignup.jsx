@@ -48,7 +48,6 @@ const UserSignup = () => {
     formData.append("phoneNumber", phoneNumber);
     formData.append("allowChat", allowChat);
 
-    // Append the profile
     if (profile) {
       formData.append("profile", profile);
     }
@@ -65,45 +64,52 @@ const UserSignup = () => {
       );
 
       if (response.status === 200) {
-        const data = response.data;
-        setUser(data.data);
+        const data = response.data.data;
+        setUser(data.user);
 
-        localStorage.setItem("accessToken", data.data.accessToken);
-        localStorage.setItem("refreshToken", data.data.refreshToken);
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
 
-        const userPreference = data.data.user.preference;
+        // Check if email is verified before navigating
+        // if (!data.user.isVerified) {
+        //   navigate("/verify");
+        // }
+
+        const userPreference = data.user.preference;
         if (userPreference === "FitnessGroup") {
           navigate("/FitnessGroup");
         } else {
           navigate("/WorkoutBuddy");
         }
       }
+    } catch (err) {
+      console.error("Error during registration:", err);
+      setError("An error occurred during registration. Please try again.");
 
-      // Reset form fields
-      setEmail("");
-      setPassword("");
-      setUsername("");
-      setFullName("");
-      setGender("");
-      setBio("");
-      setPreference("");
-      setProfile(null);
-      setFitnessGoals("WeightLoss");
-      setWorkoutPreferences([]);
-      setAvailableDays("Weekends");
-      setAvailableTimeSlot("Morning");
-      setExperienceLevel("Beginner");
-      setPhoneNumber("");
-      setAllowChat("false");
-    } catch (error) {
-      if (error.response.status === 409) {
+      if (err.response && err.response.status === 409) {
         setError("User already exists");
       } else {
         alert("An unexpected error occurred. Please try again.");
       }
     }
-  };
 
+    // Reset form fields
+    setEmail("");
+    setPassword("");
+    setUsername("");
+    setFullName("");
+    setGender("");
+    setBio("");
+    setPreference("");
+    setProfile(null);
+    setFitnessGoals("WeightLoss");
+    setWorkoutPreferences([]);
+    setAvailableDays("Weekends");
+    setAvailableTimeSlot("Morning");
+    setExperienceLevel("Beginner");
+    setPhoneNumber("");
+    setAllowChat("false");
+  };
 
   const handleCheckboxChange = (e) => {
     const { value } = e.target;

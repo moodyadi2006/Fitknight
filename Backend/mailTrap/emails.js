@@ -1,7 +1,10 @@
 import { mailTrapClient, sender } from './mailTrap.config.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
-import { JOIN_REQUEST_TEMPLATE, VERIFICATION_EMAIL_TEMPLATE } from './emailTemplates.js';
+import {
+  JOIN_REQUEST_TEMPLATE,
+  VERIFICATION_EMAIL_TEMPLATE,
+} from './emailTemplates.js';
 
 export const sendVerificationEmail = asyncHandler(
   async (email, verificationToken) => {
@@ -11,8 +14,10 @@ export const sendVerificationEmail = asyncHandler(
         from: sender,
         to: recipent,
         subject: 'Verify your Email',
-        html: VERIFICATION_EMAIL_TEMPLATE
-          .replace('{verificationToken}', verificationToken),
+        html: VERIFICATION_EMAIL_TEMPLATE.replace(
+          '{verificationToken}',
+          verificationToken,
+        ),
         category: 'Verification Email',
       });
 

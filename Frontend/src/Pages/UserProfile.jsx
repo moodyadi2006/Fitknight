@@ -15,6 +15,8 @@ import { IoIosFitness, IoIosTime } from "react-icons/io";
 
 import { LuCalendarDays, LuGraduationCap } from "react-icons/lu";
 import { TiTick } from "react-icons/ti";
+import LoadingPanel from "../Components/LoadingPanel";
+import ErrorPanel from "../Components/ErrorPanel";
 
 const UserProfile = () => {
   const [user, setUser] = useState();
@@ -151,11 +153,19 @@ const UserProfile = () => {
   }, []);
 
   if (loading) {
-    return <p className="text-center text-gray-500">Loading...</p>;
+    return (
+      <div>
+        <LoadingPanel />
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="text-center text-red-500">Error: {error}</p>;
+    return (
+      <div>
+        <ErrorPanel message={error} />
+      </div>
+    );
   }
 
   return (

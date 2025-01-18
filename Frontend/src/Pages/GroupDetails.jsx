@@ -13,6 +13,8 @@ import { MdMyLocation } from "react-icons/md";
 import { BsFillSendFill } from "react-icons/bs";
 import socket from "../Components/socket";
 import { useParams } from "react-router-dom";
+import LoadingPanel from "../Components/LoadingPanel";
+import ErrorPanel from "../Components/ErrorPanel";
 // Connect to the server
 
 const GroupDetails = () => {
@@ -150,21 +152,6 @@ const GroupDetails = () => {
     }
   };
 
-  async function sendNotification() {
-    await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/subscriptions/notify`,
-      {
-        message: `${loggedInUser.fullName} sent you a message in ${groupName} group`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      }
-    );
-
-    console.log("Notification sent.");
-  }
 
   const toggleMembersVisibility = () => {
     setIsMembersVisible(!isMembersVisible);
@@ -410,11 +397,19 @@ const GroupDetails = () => {
   }, []);
 
   if (loading) {
-    return <p className="text-center text-gray-500">Loading...</p>;
+    return (
+      <div>
+        <LoadingPanel />
+      </div>
+    )
   }
 
   if (error) {
-    return <p className="text-center text-red-500">Error: {error}</p>;
+    return  (
+      <div>
+        <ErrorPanel message={error}/>
+      </div>
+    )
   }
 
   return (

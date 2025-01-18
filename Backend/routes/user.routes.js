@@ -12,6 +12,7 @@ import {
   updateAccountDetails,
   updateLocation,
   updateProfile,
+  verifyEmail,
 } from '../controllers/user.controller.js';
 import { verifyJWT } from '../middlewares/auth.middleware.js';
 
@@ -19,6 +20,8 @@ const router = Router();
 
 // Corrected route definition
 router.post('/register', upload.single('profile'), registerUser);
+
+router.post('/verify', verifyEmail);
 
 router.post('/login', loginUser);
 

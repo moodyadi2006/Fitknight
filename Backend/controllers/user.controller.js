@@ -90,7 +90,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
   }
 
-  
+  sendVerificationEmail(email, verificationToken);
 
   const user = await User.create({
     fullName,
@@ -124,8 +124,6 @@ const registerUser = asyncHandler(async (req, res) => {
     user._id,
   );
 
-  //await sendVerificationEmail(user.email, user.verificationToken);
-
   const options = {
     httpOnly: true,
     secure: true,
@@ -144,35 +142,82 @@ const registerUser = asyncHandler(async (req, res) => {
     );
 });
 
-const loginUser = asyncHandler(async (req, res) => {
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { verificationToken } = req.body;
+  try {
+    const user = await User.findOne({ verificationToken: verificationToken });
+    console.log(user);
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    if (Date.now() > user.verificationTokenExpiresAt) {
+      throw new ApiError(400, 'Verification token has expired');
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+      user._id,
+    );
+
+    user.isVerified = true;
+    user.verificationToken = null;
+    user.verificationTokenExpiresAt = null;
+    await user.save({ validateBeforeSave: false });
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    return res
+      .status(200)
+      .cookie('accessToken', accessToken, options)
+      .cookie('refreshToken', refreshToken, options)
+      .json(new ApiResponse(200, 'User verified successfully', { user }));
+  } catch (error) {
+    throw new ApiError(500, 'Something went wrong while verifying the user');
+  }
+});
+
+const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   if (email === '' || password === '') {
-    res.status(400);
-    throw new ApiError('All fields are required');
+    return next(new ApiError(400, 'All fields are required'));
   }
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw new ApiError(404, 'User not found');
+    return next(new ApiError(404, 'User not found'));
   }
 
   const isPasswordCorrect = await user.isPasswordCorrect(password);
-
   if (!isPasswordCorrect) {
-    res.status(400);
-    throw new ApiError('Invalid password');
+    return next(new ApiError(400, 'Invalid password'));
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id,
   );
 
-  const loggedInUser = await User.findById(user._id).select('-refreshToken');
+  const verificationToken = Math.floor(
+    100000 + Math.random() * 900000,
+  ).toString();
+
+  const loggedInUser = await User.findByIdAndUpdate(user._id, {
+    verificationToken,
+    verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
+  }).select('-refreshToken');
+
+  try {
+    sendVerificationEmail(email, verificationToken); // Ensure this function handles errors properly
+  } catch (err) {
+    return next(new ApiError(500, 'Error sending verification email'));
+  }
 
   const options = {
     httpOnly: true,
-    secure: true,
-  }; //These cookies are only modifiable by server but user can read them
+    secure: process.env.NODE_ENV === 'production', // Only set to true in production
+  };
 
   return res
     .status(200)
@@ -236,6 +281,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   await User.findByIdAndUpdate(req.user._id, {
     $unset: { refreshToken: 1 },
+    isVerified: false,
   });
 
   // Clear cookies
@@ -393,6 +439,7 @@ const updateLocation = asyncHandler(async (req, res) => {
 
 export {
   registerUser,
+  verifyEmail,
   loginUser,
   getUserProfile,
   logoutUser,

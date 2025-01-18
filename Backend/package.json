@@ -21,7 +21,7 @@
     "@sendgrid/mail": "^8.1.4",
     "algoliasearch": "^5.19.0",
     "aws-sdk": "^2.1692.0",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -30,16 +30,12 @@
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
-    "mailgun-js": "^0.22.0",
     "mailtrap": "^3.4.0",
     "mongoose": "^8.9.3",
     "mongoose-aggregate-paginate-v2": "^1.1.2",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.16",
-    "react-instantsearch": "^7.13.10",
     "shadcn": "^2.1.8",
-    "socket.io": "^4.8.1",
-    "web-push": "^3.6.7"
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9",

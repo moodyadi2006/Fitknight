@@ -734,7 +734,7 @@ const JoinGroup = () => {
                       </p>
                     )}
                     {/* Undo Request button */}
-                    {!group.isMember &&
+                    {group &&
                       loadingState[group._id] === "pending" && (
                         <button
                           onClick={() => undoRequestHandler(group._id)}
@@ -744,7 +744,7 @@ const JoinGroup = () => {
                         </button>
                       )}
                     {/* Send Request button */}
-                    {!group.isMember &&
+                    {group &&
                       loadingState[group._id] !== "accepted" &&
                       loadingState[group._id] !== "pending" &&
                       (loadingState[group._id] === "undone" ||

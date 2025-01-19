@@ -81,7 +81,6 @@ const UserSignup = () => {
           },
         }
       );
-      console.log(response);
 
       if (response.status === 200) {
         const data = response.data.data;

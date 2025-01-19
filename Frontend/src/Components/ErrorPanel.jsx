@@ -1,7 +1,18 @@
-
+import {logo} from "../assets/logo.png"
 const ErrorPanel = ({ message }) => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-800 bg-opacity-75 fixed top-0 left-0 right-0 bottom-0 z-50">
+      <div className="flex flex-col items-center justify-center space-y-6 p-8 rounded-lg bg-white bg-opacity-10 backdrop-blur-xl shadow-lg border border-white">
+        <div className="flex justify-center items-center mb-6">
+          <img
+            className="h-[100px] w-[100px] mr-3"
+            src={logo}
+            alt="Fitknight Logo"
+          />
+          <span className="text-red-500 text-3xl font-extrabold">
+            FITKNIGHT
+          </span>
+        </div>
       <div className="bg-red-600 text-white p-8 rounded-lg shadow-lg flex items-center space-x-4 max-w-md mx-auto">
         <div className="w-16 h-16 bg-white text-red-600 rounded-full flex items-center justify-center">
           <svg

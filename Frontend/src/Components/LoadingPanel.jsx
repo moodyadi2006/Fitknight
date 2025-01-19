@@ -15,6 +15,16 @@ const LoadingPanel = () => {
       </video>
 
       <div className="flex flex-col items-center justify-center space-y-6 p-8 rounded-lg bg-white bg-opacity-10 backdrop-blur-xl shadow-lg border border-white">
+        <div className="flex justify-center items-center mb-6">
+            <img
+              className="h-[100px] w-[100px] mr-3"
+              src={logo}
+              alt="Fitknight Logo"
+            />
+            <span className="text-red-500 text-3xl font-extrabold">
+              FITKNIGHT
+            </span>
+          </div>
         <div className="relative">
           {/* Outer Spinning Circle */}
           <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin-slow"></div>

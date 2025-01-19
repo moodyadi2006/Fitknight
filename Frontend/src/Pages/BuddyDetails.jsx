@@ -36,66 +36,68 @@ const BuddyDetails = () => {
   const [isVisible, setIsVisible] = useState(false); // Initially false, show only when there's a new message
 
   useEffect(() => {
-    /**
+  let timeout;
+ /**
      * Fetches buddy messages from the backend and updates the state accordingly.
      * If a new message is received from a different sender, it triggers a notification.
      *
-     * - Fetches all messages and updates the `allMessages` state.
+     * - Fetches all messages and updates the allMessages state.
      * - Checks the latest message and compares the sender with the logged-in user.
      * - If the sender is different, increases the message count and shows a notification.
      * - Notification disappears after 5 seconds.
-     * - Handles 404 errors by setting `allMessages` to an empty array.
+     * - Handles 404 errors by setting allMessages to an empty array.
      *
      * @throws {Error} If the request fails or the response status is 404.
      */
-
-    const fetchBuddyMessages = async () => {
-      try {
-        // Fetch messages from the backend
-        const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/messages/fetchMessages`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            },
-          }
-        );
-        const data = response.data; // Axios response already parsed
-        setAllMessages(data);
-
-        // Get the most recent message
-        const latestMessage = data[data.length - 1];
-
-        // If the latest message is not sent by the logged-in user, it's a new message
-        if (latestMessage && latestMessage.sender !== loggedInUser.username) {
-          setMessageCount(1); // Increase the message count
-          setNewMessage(latestMessage);
-          setIsVisible(true); // Show notification
-
-          // Set the message to disappear after 5 seconds
-          const timeout = setTimeout(() => {
-            setIsVisible(false); // Hide notification after 5 seconds
-          }, 5000);
-
-          // Clean up the timeout on component unmount or re-run
-          return () => clearTimeout(timeout);
+  const fetchBuddyMessages = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/messages/fetchMessages`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
         }
-      } catch (error) {
-        if (error.response.status === 404) {
-          setAllMessages([]);
-        }
+      );
+      const data = response.data;
+      setAllMessages(data);
+
+      // Get the latest message
+      const latestMessage = data[data.length - 1];
+
+      // If it's a new message from a different sender, show notification
+      if (
+        latestMessage &&
+        latestMessage.sender !== loggedInUser.username &&
+        latestMessage !== newMessage // Avoid duplicate notifications
+      ) {
+        setMessageCount((prevCount) => prevCount + 1);
+        setNewMessage(latestMessage);
+        setIsVisible(true);
+
+        // Automatically hide the notification after 5 seconds
+        timeout = setTimeout(() => {
+          setIsVisible(false);
+        }, 5000);
       }
-    };
-
-    fetchBuddyMessages();
-
-    if (scrollRef.current) {
-      const scrollElement = scrollRef.current;
-
-      // Auto-scroll to the latest message
-      scrollElement.scrollTop = scrollElement.scrollHeight;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        setAllMessages([]);
+      }
     }
-  }, [loggedInUser.username]);
+  };
+
+  fetchBuddyMessages();
+
+  // Auto-scroll to the bottom
+  if (scrollRef.current) {
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }
+
+  // Clean up the timeout
+  return () => clearTimeout(timeout);
+}, [loggedInUser.username, newMessage]);
+
 
   useEffect(() => {
     socket.on("chatMessage", (message) => {

@@ -172,7 +172,7 @@ const GroupDetails = () => {
       setMessage("");
 
       try {
-        await axios.post(
+        const response = await axios.post(
           `${import.meta.env.VITE_BASE_URL}/messages/saveMessage`,
           {
             sender: loggedInUser.fullName,
@@ -186,6 +186,7 @@ const GroupDetails = () => {
             },
           }
         );
+        setAllMessages((prevMessages) => [...prevMessages, response.data.data.message]);
         if (scrollRef.current) {
           scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }

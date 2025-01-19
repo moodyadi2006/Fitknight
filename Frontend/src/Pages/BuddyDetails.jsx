@@ -96,7 +96,7 @@ const BuddyDetails = () => {
 
   // Clean up the timeout
   return () => clearTimeout(timeout);
-}, [loggedInUser.username, allMessages]);
+}, [loggedInUser.username, newMessage]);
 
 
   useEffect(() => {
@@ -164,7 +164,7 @@ const BuddyDetails = () => {
       setMessage("");
 
       try {
-        await axios.post(
+        const response = await axios.post(
           `${import.meta.env.VITE_BASE_URL}/messages/saveBuddyMessage`,
           {
             sender: loggedInUser.username,
@@ -178,6 +178,7 @@ const BuddyDetails = () => {
             },
           }
         );
+        setAllMessages((prevMessages) => [...prevMessages, response.data.data.message]);
         if (scrollRef.current) {
           scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }

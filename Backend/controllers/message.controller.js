@@ -5,9 +5,9 @@ const saveMessage = async (req, res) => {
     const { sender, receiver, message, timestamp } = req.body;
     const newMessage = new Message({ sender, receiver, message, timestamp });
     await newMessage.save();
-    res
+res
       .status(201)
-      .json({ success: true, message: 'Message saved successfully.' });
+      .json(new ApiResponse(201, 'Message saved successfully.', newMessage));
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -18,9 +18,9 @@ const saveBuddyMessage = async (req, res) => {
     const { sender, receiver, message, timestamp } = req.body;
     const newMessage = new Message({ sender, receiver, message, timestamp });
     await newMessage.save();
-    res
+  res
       .status(201)
-      .json({ success: true, message: 'Message saved successfully.' });
+      .json(new ApiResponse(201, 'Message saved successfully.', newMessage));
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

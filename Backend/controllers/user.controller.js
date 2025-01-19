@@ -8,7 +8,7 @@ import {
 } from '../utils/cloudinary.js';
 import { CreateFitnessGroup } from '../models/createFitnessGroup.model.js';
 import GroupRequest from '../models/groupRequest.model.js';
-import { joinRequestEmail, sendVerificationEmail } from '../mailTrap/emails.js';
+//import { joinRequestEmail, sendVerificationEmail } from '../mailTrap/emails.js';
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -54,8 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
     experienceLevel === '' ||
     phoneNumber === ''
   ) {
-    res.status(400);
-    throw new ApiError('All fields are required');
+    return res.status(400).json(new ApiError(400, 'All fields are required'));
   }
 
   const workoutSplit = workoutPreferences.split(',');
@@ -68,7 +67,17 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (existingUser) {
-    throw new ApiError(409, 'User already exists');
+    if (existingUser.username === username && existingUser.email === email) {
+      return res
+        .status(409)
+        .json(new ApiError(409, 'Both Username and Email already exist'));
+    } else if (existingUser.username === username) {
+      return res.status(410).json(new ApiError(409, 'Username already exists'));
+    } else if (existingUser.email === email) {
+      return res
+        .status(411)
+        .json(new ApiError(411, 'User Email already exists'));
+    }
   }
 
   const profileLocalPath = req.file
@@ -182,17 +191,18 @@ const verifyEmail = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   if (email === '' || password === '') {
-    return next(new ApiError(400, 'All fields are required'));
+    return res.status(400).json(new ApiError(400, 'All fields are required'));
   }
 
   const user = await User.findOne({ email });
+
   if (!user) {
-    return next(new ApiError(404, 'User not found'));
+    return res.status(404).json(new ApiError(404, 'Invalid Email'));
   }
 
   const isPasswordCorrect = await user.isPasswordCorrect(password);
   if (!isPasswordCorrect) {
-    return next(new ApiError(400, 'Invalid password'));
+    return res.status(405).json(new ApiError(405, 'Invalid password'));
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
@@ -208,11 +218,11 @@ const loginUser = asyncHandler(async (req, res, next) => {
     verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
   }).select('-refreshToken');
 
-  try {
-    sendVerificationEmail(email, verificationToken); // Ensure this function handles errors properly
-  } catch (err) {
-    return next(new ApiError(500, 'Error sending verification email'));
-  }
+  // try {
+  //   sendVerificationEmail(email, verificationToken); // Ensure this function handles errors properly
+  // } catch (err) {
+  //   return next(new ApiError(500, 'Error sending verification email'));
+  // }
 
   const options = {
     httpOnly: true,

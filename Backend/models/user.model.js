@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     enum: ['Male', 'Female', 'Others'],
+    default: 'Male',
     required: true,
   },
   bio: {
@@ -41,11 +42,13 @@ const userSchema = new mongoose.Schema({
   preference: {
     type: String,
     enum: ['WorkoutBuddy', 'FitnessGroup'],
+    default: 'WorkoutBuddy',
     required: true,
   },
   fitnessGoals: {
     type: String,
     enum: ['WeightLoss', 'MuscleGain', 'Endurance'],
+    default: 'WeightLoss',
     required: true,
   },
   workoutPreferences: {
@@ -55,11 +58,13 @@ const userSchema = new mongoose.Schema({
   availableDays: {
     type: String,
     enum: ['EveryDay', 'Weekdays', 'Weekends', 'MWF', 'TTS'],
+    default: 'Weekends',
     required: true,
   },
   availableTimeSlot: {
     type: String,
     enum: ['Morning', 'Evening', 'Afternoon'],
+    default: 'Morning',
     required: true,
   },
   location: {
@@ -73,6 +78,7 @@ const userSchema = new mongoose.Schema({
   experienceLevel: {
     type: String,
     enum: ['Beginner', 'Intermediate', 'Advanced'],
+    default: 'Beginner',
     required: true,
   },
   phoneNumber: {
@@ -91,22 +97,25 @@ const userSchema = new mongoose.Schema({
   accessToken: {
     type: String,
   },
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-  resetPasswordToken: {
-    type: String,
-  },
-  resetPasswordExpiresAt: {
-    type: Date,
-  },
-  verificationToken: {
-    type: String,
-  },
-  verificationTokenExpiresAt: {
-    type: Date,
-  },
+  //I have made these fields for email Verification but Since I do not have a domain name,
+  //  It can only send email to my mail ID
+  //Therefore I have commented these fields
+  // isVerified: {
+  //   type: Boolean,
+  //   default: false,
+  // },
+  // resetPasswordToken: {
+  //   type: String,
+  // },
+  // resetPasswordExpiresAt: {
+  //   type: Date,
+  // },
+  // verificationToken: {
+  //   type: String,
+  // },
+  // verificationTokenExpiresAt: {
+  //   type: Date,
+  // },
 });
 
 userSchema.pre('save', async function (next) {

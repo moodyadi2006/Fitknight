@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * MyBuddies component
+ * 
+ * This component fetches the logged-in user's profile and all approved buddies, 
+ * and displays them in a list. It also handles the approval and rejection of 
+ * pending buddy requests.
+ * 
+ * @returns {React.ReactElement} The MyBuddies component
+ */
 const MyBuddies = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loggedInUser, setLoggedInUser] = useState({});
@@ -12,6 +21,12 @@ const MyBuddies = () => {
   const [buddies, setBuddies] = useState([]);
   const [requestCount, setRequestCount] = useState(0);
 
+  /**
+   * Handles the approval of a buddy request
+   * @param {string} requestId The ID of the request to approve
+   * @throws {Error} If there is an error with the API request, or if the response is invalid
+   */
+  
   const handleApprove = async (requestId) => {
     setRequestCount(0);
     try {
@@ -43,7 +58,6 @@ const MyBuddies = () => {
         }
       );
 
-      // Ensure response2.data.data exists and is valid
       if (!response2.data || !response2.data.data) {
         throw new Error("Invalid response from getAnyProfile API.");
       }
@@ -60,6 +74,10 @@ const MyBuddies = () => {
   };
 
   useEffect(() => {
+  /**
+   * Fetches the logged-in user's profile and all approved buddies
+   * @throws {Error} If there is an error with the API request, or if the response is invalid
+   */
     const fetchUserAndBuddies = async () => {
       try {
         const token = localStorage.getItem("accessToken");
@@ -149,6 +167,11 @@ const MyBuddies = () => {
     fetchUserAndBuddies();
   }, []);
 
+  /**
+   * Rejects a pending buddy request
+   * @param {string} requestId The ID of the request to reject
+   * @throws {Error} If the request fails or the response is invalid
+   */
   const handleReject = async (requestId) => {
     setRequestCount(0);
     try {
@@ -169,6 +192,11 @@ const MyBuddies = () => {
     }
   };
 
+  /**
+   * Fetches a user's profile details by ID
+   * @param {string} id The ID of the user to fetch
+   * @throws {Error} If the request fails or the response is invalid
+   */
   const fetchUserProfile = async (id) => {
     try {
       // Ensure token exists
@@ -203,6 +231,10 @@ const MyBuddies = () => {
     }
   };
 
+  /**
+   * Fetches all pending buddy requests for the current user
+   * @throws {Error} If the request fails or the response is invalid
+   */
   const pendingRequestHandler = async () => {
     setModalVisible(true);
    
@@ -225,11 +257,16 @@ const MyBuddies = () => {
         setPendingRequests((prevRequests) => [...prevRequests, buddy]);
       });
     } catch (error) {
-      console.log(error);
+      console.log("No pending Requests")
     }
   };
 
   useEffect(() => {
+/**
+ * Fetches all pending buddy requests for the current user and updates the
+ * request count directly
+ * @throws {Error} If the request fails or the response is invalid
+ */
     const fetchPendingRequests = async () => {
       try {
         const response = await axios.get(
@@ -243,14 +280,13 @@ const MyBuddies = () => {
             },
           }
         );
-
-        console.log(response); // Debugging the response
-
         // Assuming the pending requests are in response.data.pendingRequests
         const pendingRequests = response.data.length || [];
         setRequestCount(pendingRequests); // Update the count directly
       } catch (error) {
-        console.error("Error fetching pending requests:", error);
+        if(error.response && error.response.status === 404) {
+          setRequestCount(0);
+        }
       }
     };
 
@@ -259,8 +295,11 @@ const MyBuddies = () => {
     // Poll every 10 seconds to check for new requests
     const interval = setInterval(fetchPendingRequests, 60000);
     return () => clearInterval(interval); // Clean up the interval on unmount
-  }, [loggedInUser._id]); // Remove `pendingRequests` dependency
+  }, [loggedInUser._id]); 
 
+/**
+ * Closes the modal and resets the pending requests state
+ */
   const closeModal = () => {
     setModalVisible(false);
     setPendingRequests([]);

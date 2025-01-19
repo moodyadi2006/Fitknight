@@ -36,6 +36,19 @@ const BuddyDetails = () => {
   const [isVisible, setIsVisible] = useState(false); // Initially false, show only when there's a new message
 
   useEffect(() => {
+    /**
+     * Fetches buddy messages from the backend and updates the state accordingly.
+     * If a new message is received from a different sender, it triggers a notification.
+     *
+     * - Fetches all messages and updates the `allMessages` state.
+     * - Checks the latest message and compares the sender with the logged-in user.
+     * - If the sender is different, increases the message count and shows a notification.
+     * - Notification disappears after 5 seconds.
+     * - Handles 404 errors by setting `allMessages` to an empty array.
+     *
+     * @throws {Error} If the request fails or the response status is 404.
+     */
+
     const fetchBuddyMessages = async () => {
       try {
         // Fetch messages from the backend
@@ -55,7 +68,7 @@ const BuddyDetails = () => {
 
         // If the latest message is not sent by the logged-in user, it's a new message
         if (latestMessage && latestMessage.sender !== loggedInUser.username) {
-          setMessageCount((prevCount) => prevCount + 1); // Increase the message count
+          setMessageCount(1); // Increase the message count
           setNewMessage(latestMessage);
           setIsVisible(true); // Show notification
 
@@ -68,7 +81,9 @@ const BuddyDetails = () => {
           return () => clearTimeout(timeout);
         }
       } catch (error) {
-        console.error("Error fetching messages:", error);
+        if (error.response.status === 404) {
+          setAllMessages([]);
+        }
       }
     };
 
@@ -118,6 +133,17 @@ const BuddyDetails = () => {
     };
   }, []);
 
+  /**
+   * Handles the sending of a message by the logged-in user to the specified receiver.
+   * - Prevents default form submission behavior.
+   * - Emits the message to other clients via a socket.
+   * - Sends the message data to the server to be saved.
+   * - Clears the message input field after sending.
+   * - Automatically scrolls to the latest message.
+   * @param {Event} e The event object triggered by the form submission.
+   * @throws {Error} If there is an issue saving the message to the server.
+   */
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
@@ -162,10 +188,14 @@ const BuddyDetails = () => {
     }
   };
 
-  // Handle input change for editable fields
 
   // Fetch user data from the backend
   useEffect(() => {
+    /**
+     * Fetches the buddy's profile data and the logged-in user's data from the backend
+     * @param {string} username The username of the buddy to fetch
+     * @throws {Error} If there is an issue fetching either the buddy or the logged-in user's data
+     */
     const fetchData = async (username) => {
       try {
         // Fetch group data with groupName as a query parameter
@@ -222,7 +252,7 @@ const BuddyDetails = () => {
       <div>
         <ErrorPanel error={error} />
       </div>
-    )
+    );
   }
 
   return (
@@ -324,7 +354,9 @@ const BuddyDetails = () => {
               <span
                 className="bg-red-500 text-white text-sm rounded-full w-5 h-5 flex items-center justify-center absolute top-0 right-0 transform translate-x-1 translate-y-1 animate-ping"
                 style={{ animationDuration: "1s" }}
-              ></span>
+              >
+                !
+              </span>
             )}
           </div>
 
@@ -338,22 +370,33 @@ const BuddyDetails = () => {
                     (message.sender === user.username &&
                       message.receiver === loggedInUser.username)
                 )
-                .map((message, index) => (
-                  <li
-                    key={index}
-                    className={
-                      message.sender === loggedInUser.username
-                        ? "right"
-                        : "left"
+                .map((message, index) => {
+                  // Format the timestamp to only show time
+                  const time = new Date(message.timestamp).toLocaleTimeString(
+                    [],
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
                     }
-                  >
-                    <p className="text-blue-500 text-sm">{message.sender}</p>
-                    <p className="text-white">{message.message}</p>
-                    <p className="float-right text-white text-xs mt-1">
-                      {currentTime}
-                    </p>
-                  </li>
-                ))}
+                  );
+
+                  return (
+                    <li
+                      key={index}
+                      className={
+                        message.sender === loggedInUser.username
+                          ? "right"
+                          : "left"
+                      }
+                    >
+                      <p className="text-blue-500 text-sm">{message.sender}</p>
+                      <p className="text-white">{message.message}</p>
+                      <p className="float-right text-white text-xs mt-1">
+                        {time}
+                      </p>
+                    </li>
+                  );
+                })}
             </ul>
           </div>
 

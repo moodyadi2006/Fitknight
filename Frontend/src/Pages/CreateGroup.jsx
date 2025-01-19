@@ -4,6 +4,19 @@ import logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import { FitnessGroupDataContext } from "../context/FitnessGroupContext";
 
+/**
+ * Handles the group creation form submission.
+ *
+ * - Prevents the default form submission behavior.
+ * - Resets the form error.
+ * - Creates a new FormData object and appends all the relevant form fields to it.
+ * - Appends the profile image to the FormData object if it exists.
+ * - Appends the rules to the FormData object if there are any.
+ * - Makes a POST request to the group creation endpoint.
+ * - Checks if the response status is 200 and if so, sets the group context and navigates to the FitnessGroup page.
+ * - Resets the form fields.
+ * - Catches any errors and handles them accordingly.
+ */
 const CreateGroup = () => {
   const [groupName, setGroupName] = useState("");
   const [organizer, setOrganizer] = useState("");
@@ -28,6 +41,15 @@ const CreateGroup = () => {
   const { setGroup } = useContext(FitnessGroupDataContext);
 
   useEffect(() => {
+    /**
+     * Fetches the user's profile from the backend.
+     *
+     * - Sends a GET request to the user profile endpoint with authorization headers.
+     * - Logs the response for debugging purposes.
+     * - Sets the organizer state with the full name of the user from the response data.
+     * - Catches and logs any errors that occur during the API request.
+     */
+
     const fetchUser = async () => {
       try {
         const response = await axios.get(
@@ -48,6 +70,19 @@ const CreateGroup = () => {
     fetchUser();
   }, []);
 
+  /**
+   * Handles the group creation form submission.
+   *
+   * - Prevents the default form submission behavior.
+   * - Resets the form error.
+   * - Creates a new FormData object and appends all the relevant form fields to it.
+   * - Appends the profile image to the FormData object if it exists.
+   * - Appends the rules to the FormData object if there are any.
+   * - Makes a POST request to the group creation endpoint.
+   * - Checks if the response status is 200 and if so, sets the group context and navigates to the FitnessGroup page.
+   * - Resets the form fields.
+   * - Catches any errors and handles them accordingly.
+   */
   const submitHandler = async (e) => {
     e.preventDefault();
     setError("");
@@ -126,6 +161,12 @@ const CreateGroup = () => {
       }
     }
   };
+
+/**
+ * Handles the change event for an activity type checkbox.
+ * Adds the activity type to the state if the checkbox is checked, or removes it if unchecked.
+ * @param {React.ChangeEvent<HTMLInputElement>} e - The change event from the checkbox.
+ */
 
   const handleCheckboxChange = (e) => {
     const value = e.target.value;

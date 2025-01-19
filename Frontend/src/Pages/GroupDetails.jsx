@@ -15,7 +15,14 @@ import socket from "../Components/socket";
 import { useParams } from "react-router-dom";
 import LoadingPanel from "../Components/LoadingPanel";
 import ErrorPanel from "../Components/ErrorPanel";
-// Connect to the server
+
+/**
+ * GroupDetails is a React component that renders the details of a specific group.
+ * It handles fetching group and user data, displays group information, member list,
+ * and chat messages. Users can send messages, toggle visibility of members and rules,
+ * edit group details, and update the group image. The component also manages state
+ * for loading, errors, notifications, and more.
+ */
 
 const GroupDetails = () => {
   const { groupName } = useParams();
@@ -38,8 +45,18 @@ const GroupDetails = () => {
   const currentTime = new Date().toLocaleTimeString();
   const [selectedMember, setSelectedMember] = useState(null);
   const [showPanel, setShowPanel] = useState(false);
+  const [messageCount, setMessageCount] = useState(0);
+  const [newMessage, setNewMessage] = useState(null);
+  const [isVisible, setIsVisible] = useState(false); // Initially false, show only when there's a new message
 
   useEffect(() => {
+    /**
+     * Fetches all messages for the current group from the server and updates the
+     * `allMessages` state. If the latest message is not sent by the logged-in user,
+     * it increases the message count, sets the new message, and shows a notification
+     * for 5 seconds.
+     */
+
     const fetchMessages = async () => {
       try {
         // Fetch messages from the backend
@@ -55,18 +72,34 @@ const GroupDetails = () => {
 
         // Update allMessages
         setAllMessages(data);
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+
+        // Get the most recent message
+        const latestMessage = data[data.length - 1];
+
+        // If the latest message is not sent by the logged-in user, it's a new message
+        if (latestMessage && latestMessage.sender !== loggedInUser.username) {
+          setMessageCount((prevCount) => prevCount + 1); // Increase the message count
+          setNewMessage(latestMessage);
+          setIsVisible(true); // Show notification
+
+          // Set the message to disappear after 5 seconds
+          const timeout = setTimeout(() => {
+            setIsVisible(false); // Hide notification after 5 seconds
+          }, 5000);
+
+          // Clean up the timeout on component unmount or re-run
+          return () => clearTimeout(timeout);
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
     };
-
     fetchMessages();
-
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
     // Scroll to the bottom whenever allMessages changes
-  }, []); // Dependency array should be empty to avoid infinite loops
+  }, [loggedInUser]);
 
   useEffect(() => {
     socket.on("chatMessage", (message) => {
@@ -103,6 +136,21 @@ const GroupDetails = () => {
       socket.off("chatMessage");
     };
   }, []);
+
+  /**
+   * Handles the sending of a chat message within a group.
+   *
+   * - Prevents the default form submission behavior.
+   * - Constructs a new message object with the sender's full name, group name,
+   *   message content, and a timestamp.
+   * - Emits the message to other clients via a socket.
+   * - Clears the message input field after sending.
+   * - Sends a POST request to save the message to the backend.
+   * - Catches and logs any errors that occur during the message-saving process.
+   * - Scrolls the chat view to the bottom after sending the message.
+   *
+   * @param {Event} e - The event object representing the form submission event.
+   */
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -152,11 +200,20 @@ const GroupDetails = () => {
     }
   };
 
-
+  /**
+   * Toggles the visibility of the members section.
+   *
+   * @return {void} No value is returned.
+   */
   const toggleMembersVisibility = () => {
     setIsMembersVisible(!isMembersVisible);
   };
 
+  /**
+   * Toggles the visibility of the group rules section.
+   *
+   * @return {void} No value is returned.
+   */
   const toggleRulesVisibility = () => {
     setIsRulesVisible(!isRulesVisible);
   };
@@ -167,6 +224,12 @@ const GroupDetails = () => {
     setGroup((prevGroup) => ({ ...prevGroup, [name]: value }));
   };
 
+  /**
+   * Handles the change of a checkbox by adding or removing the preference from the array.
+   *
+   * @param {string} preference The preference to add or remove from the array.
+   * @return {void} No value is returned.
+   */
   const handleCheckboxChange = (preference) => {
     setSelectedPreferences((prevPreferences) => {
       if (prevPreferences.includes(preference)) {
@@ -178,10 +241,22 @@ const GroupDetails = () => {
     });
   };
 
+  /**
+   * Handles the clicking of the group image by showing the upload file button.
+   *
+   * @return {void} No value is returned.
+   */
   const handleImageClick = () => {
     setShowButton(true);
   };
 
+  /**
+   * Handles the clicking of a member by fetching their profile data and
+   * displaying it in the profile panel.
+   *
+   * @param {Object} member The member object with an _id property.
+   * @return {void} No value is returned.
+   */
   const handleMemberClick = async (member) => {
     try {
       // Fetch member profile data
@@ -212,10 +287,31 @@ const GroupDetails = () => {
     }
   }, [selectedMember]); // Runs when selectedMember changes
 
+  /**
+   * Closes the member profile panel by setting showPanel to false and
+   * clearing the selected member data.
+   *
+   * @return {void} No value is returned.
+   */
   const closePanel = () => {
     setShowPanel(false);
     setSelectedMember(null);
   };
+
+  /**
+   * Handles the change event for a file input, allowing users to upload a new group image.
+   *
+   * - Retrieves the selected file from the event object.
+   * - Checks if a file is selected; if not, logs an error and returns.
+   * - Creates a FormData object and appends the file as 'groupImage'.
+   * - Retrieves the access token from localStorage; if not found, logs an error and returns.
+   * - Sends a PATCH request to update the group image using the provided API endpoint.
+   * - On a successful response, reloads the page to reflect changes.
+   * - Logs errors for failed requests, including server responses if available.
+   *
+   * @param {Event} e The file input change event.
+   * @returns {void} No value is returned.
+   */
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0]; // Get the selected file
@@ -312,6 +408,11 @@ const GroupDetails = () => {
 
   // Fetch user data from the backend
   useEffect(() => {
+    /**
+     * Fetches group data and user profile data from the backend
+     * @param {string} groupName The groupName to fetch
+     * @throws {Error} If there is an issue fetching either the group or the logged-in user's data
+     */
     const fetchData = async (groupName) => {
       try {
         // Fetch group data with groupName as a query parameter
@@ -401,15 +502,15 @@ const GroupDetails = () => {
       <div>
         <LoadingPanel />
       </div>
-    )
+    );
   }
 
   if (error) {
-    return  (
+    return (
       <div>
-        <ErrorPanel message={error}/>
+        <ErrorPanel message={error} />
       </div>
-    )
+    );
   }
 
   return (
@@ -891,12 +992,20 @@ const GroupDetails = () => {
           )}
         </div>
         <div className="w-2/3 z-20 border-none relative top-0 p-4 max-h-screen flex flex-col">
-          {/* Chat Room Title and Total Active Members */}
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 relative">
             <h2 className="text-white text-3xl font-extrabold">FITCHAT</h2>
             <h4 className="activeMembers text-white text-xs">
               {activeMembers.innerText}
             </h4>
+
+            {messageCount > 0 && isVisible && (
+              <span
+                className="bg-red-500 text-white text-sm rounded-full w-5 h-5 flex items-center justify-center absolute top-0 right-0 transform translate-x-1 translate-y-1 animate-ping"
+                style={{ animationDuration: "1s" }}
+              >
+                {messageCount}
+              </span>
+            )}
           </div>
 
           {/* Scrollable Chat Messages */}

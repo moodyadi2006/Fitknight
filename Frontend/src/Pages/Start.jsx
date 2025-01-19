@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.png"; // Import the logo image
 
+/**
+ * The Start component renders the initial page of the application.
+ *
+ * It includes a full-screen video background and a centered container with the
+ * Fitknight logo, a heading, and a button to continue to the user login page.
+ *
+ * @returns {JSX.Element} The rendered Start component.
+ */
 const Start = () => {
   return (
     <div>

@@ -5,6 +5,28 @@ import { FaSearch } from "react-icons/fa";
 import LoadingPanel from "../Components/LoadingPanel";
 import ErrorPanel from "../Components/ErrorPanel";
 
+/**
+ * The `Buddy` component allows users to find and filter workout buddies.
+ *
+ * Features:
+ * - Manages user state, including user list, search query, and filter states.
+ * - Provides functionality to search for users by username.
+ * - Filters users based on location, time availability, day availability, activity goals, and workout preferences.
+ * - Handles buddy requests and manages request statuses.
+ * - Fetches user and buddy data from an API.
+ * - Displays a list of users with their details and allows interactions like sending buddy requests.
+ *
+ * Dependencies:
+ * - Uses React hooks for state management and side effects.
+ * - Utilizes `axios` for API calls.
+ * - Leverages React Router's `useLocation` for query parameters.
+ *
+ * UI:
+ * - Displays a search bar and filter buttons with visual feedback.
+ * - Shows a list of users with profile details and interaction options.
+ * - Includes loading and error panels for feedback.
+ */
+
 const Buddy = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,8 +35,27 @@ const Buddy = () => {
   const [loggedInUser, setLoggedInUser] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [originalUsers, setOriginalUsers] = useState([]);
+  const [showLocationTick, setShowLocationTick] = useState(false);
+  const [showTimeAvailabilityTick, setShowTimeAvailabilityTick] =
+    useState(false);
+  const [showDayAvailabilityTick, setShowDayAvailabilityTick] = useState(false);
+  const [showActivityGoalsTick, setShowActivityGoalsTick] = useState(false);
+  const [showActivityTypeTick, setShowActivityTypeTick] = useState(false);
 
+  /**
+   * Handles the location click event by fetching the user's current geolocation
+   * and processing users based on proximity to the user's location.
+   *
+   * - Sets the location tick visibility to true.
+   * - Checks if the browser supports geolocation.
+   * - Uses the geolocation API to get the user's current position.
+   * - Iterates over the available users to fetch their address coordinates.
+   * - Calculates the distance between the user's location and each user's address.
+   * - Filters and updates the state with users located within a 10,000-meter radius.
+   * - Logs errors and alerts the user in case of geolocation or processing failures.
+   */
   const handleLocationClick = async () => {
+    setShowLocationTick(true);
     try {
       // Check if geolocation is supported
       if (!navigator.geolocation) {
@@ -29,16 +70,13 @@ const Buddy = () => {
           const { latitude, longitude } = position.coords;
 
           if (!users || !Array.isArray(users) || users.length === 0) {
-            console.error("No groups found to process.");
+            console.error("No users found to process.");
             return;
           }
 
           const responses = await Promise.allSettled(
             users.map(async (user) => {
               if (!user.location) {
-                console.error(
-                  `Invalid user: Missing address in group ${user._id}`
-                );
                 return { status: "rejected", reason: "Missing address" };
               }
 
@@ -119,7 +157,19 @@ const Buddy = () => {
     }
   };
 
+  /**
+   * Filters users by time availability based on the logged-in user's available time slot.
+   * Sets a tick to indicate the filtering process has started.
+   * Compares the user's available time slot with each user's time availability
+   * and filters out users where the user's time does not match the user's time availability.
+   * Updates the list of users to only include those that match the criteria.
+   *
+   * @returns {Promise<void>}
+   * @throws Will log an error message if filtering by time availability fails.
+   */
+
   const handleTimeAvailabilityClick = async () => {
+    setShowTimeAvailabilityTick(true);
     try {
       // User's time availability (e.g., Morning, Evening)
       const userTimeAvailability = loggedInUser.availableTimeSlot;
@@ -138,7 +188,18 @@ const Buddy = () => {
     }
   };
 
+  /**
+   * Filters users by day availability based on the logged-in user's available day of the week.
+   * Sets a tick to indicate the filtering process has started.
+   * Compares the user's available day with each user's day availability
+   * and filters out users where the user's day does not match the user's day availability.
+   * Updates the list of users to only include those that match the criteria.
+   *
+   * @returns {Promise<void>}
+   * @throws Will log an error message if filtering by day availability fails.
+   */
   const handleDayAvailabilityClick = async () => {
+    setShowDayAvailabilityTick(true);
     try {
       // User's time availability (e.g., Morning, Evening)
       const userDayAvailability = loggedInUser.availableDays;
@@ -156,7 +217,18 @@ const Buddy = () => {
     }
   };
 
+  /**
+   * Filters users by fitness goals based on the logged-in user's fitness goals.
+   * Sets a tick to indicate the filtering process has started.
+   * Compares the user's fitness goals with each user's fitness goals
+   * and filters out users where the user's fitness goals do not match the user's fitness goals.
+   * Updates the list of users to only include those that match the criteria.
+   *
+   * @returns {Promise<void>}
+   * @throws Will log an error message if filtering by fitness goals fails.
+   */
   const handleFitnessGoalsClick = async () => {
+    setShowActivityGoalsTick(true);
     try {
       // User's time availability (e.g., Morning, Evening)
       const userFitnessGoals = loggedInUser.fitnessGoals;
@@ -174,7 +246,19 @@ const Buddy = () => {
     }
   };
 
+  /**
+   * Filters users by workout preferences based on the logged-in user's preferences.
+   * Sets a tick to indicate the filtering process has started.
+   * Compares the user's workout preferences with each user's preferences
+   * and filters out users where there is no match in workout preferences.
+   * Updates the list of users to only include those that match the criteria.
+   *
+   * @returns {Promise<void>}
+   * @throws Will log an error message if filtering by workout preferences fails.
+   */
+
   const handleWorkoutPreferencesClick = async () => {
+    setShowActivityTypeTick(true);
     try {
       // User's activity preferences (e.g., ["Yoga", "Cycling"])
       const userWorkoutPreferences = loggedInUser.workoutPreferences;
@@ -201,6 +285,24 @@ const Buddy = () => {
   const queryParams = new URLSearchParams(location.search);
   const userUsername = queryParams.get("username");
 
+  /**
+   * Handles sending a buddy request from the logged-in user to a target user.
+   * Checks if there is already a pending request from the target user to the
+   * logged-in user. If so, it updates the loading state to match the current
+   * status of the request. If not, it sends a request to the target user and
+   * updates the loading state to pending. It then sets up an interval to check
+   * the status of the request periodically. If the status is accepted, it
+   * updates the loading state and clears the interval. If the status is rejected,
+   * it updates the loading state and clears the interval.
+   *
+   * @param {string} userId - The id of the logged-in user.
+   * @param {string} buddyId - The id of the target user.
+   * @param {string} status - The status of the request. This can be either
+   * "accepted", "pending", or "rejected".
+   * @returns {Promise<void>}
+   * @throws Will log an error message if sending the request or checking the
+   * status fails.
+   */
   const makeBuddyHandler = async (userId, buddyId, status) => {
     try {
       const response1 = await axios.get(
@@ -368,6 +470,13 @@ const Buddy = () => {
     }
   };
 
+  /**
+   * Undo a pending buddy request
+   * @param {string} userId The ID of the user who sent the request
+   * @param {string} buddyId The ID of the buddy to undo the request for
+   * @throws {Error} If there is an error with the API request, or if the response is invalid
+   */
+
   const undoRequestHandler = async (userId, buddyId) => {
     try {
       const response = await axios.post(
@@ -393,6 +502,12 @@ const Buddy = () => {
     }
   };
 
+  /**
+   * Handles user search input change and filters users based on the search query
+   * @param {string} searchQuery The search query entered by the user
+   * @throws {Error} If there is an issue with filtering the users
+   */
+
   const handleUserClick = (searchQuery) => {
     const filteredUsers = originalUsers.filter((user) => {
       if (user.username && searchQuery) {
@@ -405,6 +520,11 @@ const Buddy = () => {
   };
 
   useEffect(() => {
+    /**
+     * Fetches the logged-in user's profile data from the backend
+     * @throws {Error} If there is an issue with fetching the user's data
+     * @returns {Promise<Object>} The user's profile data
+     */
     const fetchUser = async () => {
       try {
         const { data } = await axios.get(
@@ -422,6 +542,11 @@ const Buddy = () => {
       }
     };
 
+    /**
+     * Fetches all users' profile data from the backend
+     * @throws {Error} If there is an issue with fetching the users' data
+     * @returns {Promise<void>} Resolves when the users' data has been fetched or an error has been thrown
+     */
     const fetchUsers = async () => {
       try {
         const response = await axios.get(
@@ -469,10 +594,27 @@ const Buddy = () => {
     }
   }, [originalUsers, userUsername]); // Trigger effect when originalGroups or groupName change
 
+  /**
+   * Resets the groups to the original array or any predefined state, clears the search input and resets all filters.
+   * This is called when the user clicks the clear button in the search bar.
+   */
   const handleClearSearch = () => {
-    // Reset groups to the original array or any predefined state
-    setUsers(originalUsers); // Assuming you have stored the original groups in `originalGroups` state
+    setUsers(originalUsers); // Set the filtered groups to the original groups
     setSearchQuery(""); // Clear the search input
+
+    resetAllFilters();
+  };
+
+  /**
+   * Resets all filters to their original state.
+   * Called when the user clicks the clear button in the search bar.
+   */
+  const resetAllFilters = () => {
+    setShowActivityGoalsTick(false);
+    setShowActivityTypeTick(false);
+    setShowDayAvailabilityTick(false);
+    setShowTimeAvailabilityTick(false);
+    setShowLocationTick(false);
   };
 
   if (loading) {
@@ -552,30 +694,45 @@ const Buddy = () => {
               className="px-4 py-2 bg-white text-blue-600 font-semibold rounded-full shadow-md hover:bg-blue-100 transition-all"
             >
               📍 Location
+              {showLocationTick && (
+                <span className="text-green-500 text-md pl-1">✔️</span>
+              )}
             </button>
             <button
               onClick={handleTimeAvailabilityClick}
               className="px-4 py-2 bg-white text-indigo-600 font-semibold rounded-full shadow-md hover:bg-indigo-100 transition-all"
             >
               ⏰ Time Availability
+              {showTimeAvailabilityTick && (
+                <span className="text-green-500 text-md pl-1">✔️</span>
+              )}
             </button>
             <button
               onClick={handleDayAvailabilityClick}
               className="px-4 py-2 bg-white text-teal-600 font-semibold rounded-full shadow-md hover:bg-teal-100 transition-all"
             >
               📅 Day Availability
+              {showDayAvailabilityTick && (
+                <span className="text-green-500 text-md pl-1">✔️</span>
+              )}
             </button>
             <button
               onClick={handleWorkoutPreferencesClick}
               className="px-4 py-2 bg-white text-pink-600 font-semibold rounded-full shadow-md hover:bg-pink-100 transition-all"
             >
               🏃‍♂️ Activity Type
+              {showActivityTypeTick && (
+                <span className="text-green-500 text-md pl-1">✔️</span>
+              )}
             </button>
             <button
               onClick={handleFitnessGoalsClick}
               className="px-4 py-2 bg-white text-orange-600 font-semibold rounded-full shadow-md hover:bg-orange-100 transition-all"
             >
               🎯 Activity Goals
+              {showActivityGoalsTick && (
+                <span className="text-green-500 text-md pl-1 ">✔️</span>
+              )}
             </button>
           </div>
         </div>

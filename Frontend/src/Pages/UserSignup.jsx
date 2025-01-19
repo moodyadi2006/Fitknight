@@ -6,6 +6,15 @@ import { useNavigate } from "react-router-dom";
 import { UserDataContext } from "../context/UserContext";
 import "react-phone-input-2/lib/style.css";
 import PhoneInput from "react-phone-input-2";
+/**
+ * Handles user signup form submission by gathering form data and sending a POST
+ * request to the server for user registration. If the registration is successful,
+ * the user's data and authentication tokens are stored in local storage, and the
+ * user is redirected based on their preference. Displays appropriate error
+ * messages for failed requests.
+ *
+ * @returns {JSX.Element} The signup form component
+ */
 const UserSignup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,15 +31,25 @@ const UserSignup = () => {
   const [experienceLevel, setExperienceLevel] = useState("Beginner");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [allowChat, setAllowChat] = useState(false);
-
-  const [error, setError] = useState("");
-
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const navigate = useNavigate();
   const { setUser } = useContext(UserDataContext);
 
+  /**
+   * Handles the user signup form submission by preventing the default form action,
+   * gathering form data, and sending a POST request to the server for user registration.
+   * If the registration is successful, the user's data and authentication tokens are
+   * stored in local storage, and the user is redirected based on their preference.
+   * Displays appropriate error messages for failed requests.
+   *
+   * @param {Event} e - The event object representing the form submission event.
+   */
+
   const submitHandler = async (e) => {
     e.preventDefault();
-    setError("");
+    setEmailError("");
+    setUsernameError("");
 
     const formData = new FormData();
     formData.append("fullName", fullName);
@@ -83,11 +102,18 @@ const UserSignup = () => {
         }
       }
     } catch (err) {
-      console.error("Error during registration:", err);
-      setError("An error occurred during registration. Please try again.");
-
       if (err.response && err.response.status === 409) {
-        setError("User already exists");
+        setUsernameError("Username already taken");
+        setEmailError("User Email already exists");
+        alert("User already exists");
+      } else if (err.response && err.response.status === 410) {
+        setUsernameError("Username already taken");
+        alert("Username already taken");
+      } else if (err.response && err.response.status === 411) {
+        setEmailError("User Email already exists");
+        alert("User Email already exists");
+      } else if (err.response && err.response.status === 400) {
+        alert("All Fields are required...");
       } else {
         alert("An unexpected error occurred. Please try again.");
       }
@@ -111,6 +137,11 @@ const UserSignup = () => {
     setAllowChat("false");
   };
 
+  /**
+   * Handles a change event on a workout preference checkbox.
+   * Toggles the preference in the workoutPreferences state array.
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The change event
+   */
   const handleCheckboxChange = (e) => {
     const { value } = e.target;
 
@@ -127,6 +158,7 @@ const UserSignup = () => {
 
   return (
     <div className="relative min-h-screen w-full">
+      {/* Background Video*/}
       <video
         autoPlay
         loop
@@ -140,6 +172,7 @@ const UserSignup = () => {
         Your browser does not support the video tag.
       </video>
 
+      {/* Content */}
       <div className="relative z-10 bg-black/50 min-h-screen flex flex-col justify-center p-6">
         <div className="w-[600px] mx-auto bg-black/70 p-6 rounded-lg shadow-lg">
           <div className="flex justify-center items-center mb-6">
@@ -172,7 +205,7 @@ const UserSignup = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
-            {error && (
+            {usernameError && (
               <p className="text-red-500 text-sm mt-1">
                 username already taken
               </p>
@@ -187,7 +220,7 @@ const UserSignup = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            {error && (
+            {emailError && (
               <p className="text-red-500 text-sm mt-1">email already exists</p>
             )}
 

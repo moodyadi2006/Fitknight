@@ -4,15 +4,38 @@ import { UserDataContext } from "../context/UserContext";
 import axios from "axios";
 import logo from "../assets/logo.png";
 
+/**
+ * A function component that renders the user login page.
+ * The page displays a form that takes an email and password as input, and
+ * submits a POST request to the server for user login. If the login is
+ * successful, the user's data and authentication tokens are stored in local
+ * storage, and the user is redirected based on their preference.
+ * Displays appropriate error messages for failed requests.
+ *
+ * @returns {ReactElement} The JSX element representing the user login page.
+ */
 const UserLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const { setUser } = useContext(UserDataContext);
-  const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
+  /**
+   * Handles the user login form submission by preventing the default form action,
+   * gathering form data, and sending a POST request to the server for user login.
+   * If the login is successful, the user's data and authentication tokens are
+   * stored in local storage, and the user is redirected based on their preference.
+   * Displays appropriate error messages for failed requests.
+   *
+   * @param {Event} e - The event object representing the form submission event.
+   */
+  
   const submitHandler = async (e) => {
     e.preventDefault();
+    setEmailError("");
+    setPasswordError("");
     try {
       const userData = { email, password };
       const response = await axios.post(
@@ -47,10 +70,15 @@ const UserLogin = () => {
         }
       }
     } catch (error) {
-      console.log("Error during logging in:", error);
       if (error.response.status === 404) {
-        console.log("User not found");
-        setError("Invalid email or password");
+        setEmailError("Invalid email");
+        alert("Invalid email");
+      } else if (error.response.status === 405) {
+        setPasswordError("Invalid password");
+        alert("Invalid password");
+      } else if (error.response.status === 400) {
+        setEmailError("All Fields are required");
+        alert("All Fields are required...");
       }
     }
   };
@@ -72,11 +100,11 @@ const UserLogin = () => {
       </video>
 
       {/* Content */}
-      <div className="p-7 h-screen flex flex-col justify-between relative z-10 bg-black/50">
-        <div>
+      <div className="p-7 h-screen flex flex-col justify-center relative z-10 bg-black/50">
+        <div className="w-[600px] mx-auto bg-black/70 p-6 rounded-lg shadow-lg">
           <div className="flex justify-center items-center relative z-10">
             <img
-              className="h-[150px] w-[150px]"
+              className="h-[100px] w-[100px]"
               src={logo}
               alt="Fitknight Logo"
             />
@@ -100,7 +128,9 @@ const UserLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-                {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+                {emailError && (
+                  <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                )}
               </div>
 
               <div className="mb-7">
@@ -115,7 +145,9 @@ const UserLogin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+                {passwordError && (
+                  <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                )}
               </div>
 
               <button className="bg-red-600 text-white font-semibold mb-2 rounded px-4 py-2 w-full text-lg placeholder:text-sm">

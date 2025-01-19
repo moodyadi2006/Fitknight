@@ -12,11 +12,27 @@ import axios from "axios";
 import { IoIosLogOut } from "react-icons/io";
 import { useState } from "react";
 
+/**
+ * A function component that renders the Fitness Group page
+ *
+ * @function
+ * @returns {ReactElement} A React element representing the Fitness Group page
+ */
 function FitnessGroup() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
+  /**
+   * Handles the group search form submission.
+   *
+   * - Prevents the default form submission behavior.
+   * - Resets the form error.
+   * - Makes a GET request to the group search endpoint.
+   * - Checks if the response status is 200 and if so, sets the group context and navigates to the GroupDetails page.
+   * - Resets the form fields.
+   * - Catches any errors and handles them accordingly.
+   */
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
@@ -43,11 +59,22 @@ function FitnessGroup() {
     }
   };
 
+  /**
+   * Clears the search input and search results
+   */
   const handleClearSearch = () => {
     setSearchQuery(""); // Clear the search input
     setSearchResults([]);
   };
 
+  /**
+   * Handles the logout button click event.
+   *
+   * - Notifies the server to invalidate the refresh token.
+   * - Clears the access and refresh tokens from localStorage.
+   * - Redirects to the login page.
+   * - Catches any errors and handles them accordingly.
+   */
   const logoutHandler = async () => {
     try {
       const accToken = localStorage.getItem("accessToken");

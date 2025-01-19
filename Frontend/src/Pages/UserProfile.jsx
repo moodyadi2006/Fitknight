@@ -18,6 +18,13 @@ import { TiTick } from "react-icons/ti";
 import LoadingPanel from "../Components/LoadingPanel";
 import ErrorPanel from "../Components/ErrorPanel";
 
+/**
+ * A functional component that displays the profile of the currently logged-in user.
+ * The component fetches the user data from the backend and displays the
+ * information in a form that can be edited. The component also handles the
+ * update request when the user clicks the "Save Changes" button.
+ * @returns {React.ReactElement} The JSX element representing the user profile.
+ */
 const UserProfile = () => {
   const [user, setUser] = useState();
   const [loading, setLoading] = useState(true);
@@ -32,6 +39,11 @@ const UserProfile = () => {
     setUser((prevUser) => ({ ...prevUser, [name]: value }));
   };
 
+  /**
+   * Handles a change event on a workout preference checkbox.
+   * Toggles the preference in the `selectedPreferences` state array.
+   * @param {string} preference - The workout preference to add or remove
+   */
   const handleCheckboxChange = (preference) => {
     setSelectedPreferences((prevPreferences) => {
       if (prevPreferences.includes(preference)) {
@@ -43,9 +55,28 @@ const UserProfile = () => {
     });
   };
 
+  /**
+   * Handles the click event on the user's profile image.
+   * Sets the `showButton` state to true, which triggers
+   * the display of a button, typically for uploading a new image.
+   */
+
   const handleImageClick = () => {
     setShowButton(true);
   };
+
+  /**
+   * Handles the file change event for the profile image upload.
+   *
+   * - Extracts the selected file from the event object.
+   * - If no file is selected, logs an error message and returns.
+   * - Creates a FormData object and appends the selected file to it.
+   * - Sends a PATCH request to the server to update the user's profile image.
+   * - If the request is successful, reloads the page to reflect the changes.
+   * - Logs an error message if the profile update fails or if an error occurs during the request.
+   *
+   * @param {Event} e - The event object representing the file input change event.
+   */
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0]; // Get the selected file
@@ -126,6 +157,15 @@ const UserProfile = () => {
 
   // Fetch user data from the backend
   useEffect(() => {
+    /**
+     * Fetches the user's profile data from the backend.
+     *
+     * - Sends a GET request to the user profile endpoint with authorization headers.
+     * - If successful, updates the user state and selected preferences with data from the response.
+     * - If the request fails or the response status is not 200, sets an error message.
+     * - Sets the loading state to false once the operation is complete.
+     */
+
     const fetchUser = async () => {
       try {
         const response = await axios.get(
@@ -261,21 +301,7 @@ const UserProfile = () => {
               <p className="flex items-center text-white">
                 <FaHeart className="mr-2 text-blue-500" />
                 <strong>Preference: </strong>
-                <span className="ml-2">
-                  {editMode ? (
-                    <select
-                      name="preference"
-                      value={user.preference}
-                      onChange={handleInputChange}
-                      className="bg-gray-200 text-black p-1 rounded"
-                    >
-                      <option value="WorkoutBuddy">Workout Buddy</option>
-                      <option value="FitnessGroup">Fitness Group</option>
-                    </select>
-                  ) : (
-                    user.preference
-                  )}
-                </span>
+                <span className="ml-2">{user.preference}</span>
               </p>
 
               <p className="flex items-center text-white">

@@ -4,6 +4,16 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LoadingPanel from "../Components/LoadingPanel";
 
+/**
+ * VerifyEmail
+ *
+ * This component is used to verify a user's email address after registration.
+ * It fetches the user's data from the backend, and displays a form to input a 6-digit
+ * verification code sent to the user's email address. If the code is valid, it verifies
+ * the user's email and redirects them to their preferred page.
+ *
+ * @returns {JSX.Element} A JSX element containing a form to input the verification code.
+ */
 const VerifyEmail = () => {
   const navigate = useNavigate();
   const [code, setCode] = useState(["", "", "", "", "", ""]);

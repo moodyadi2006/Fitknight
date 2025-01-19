@@ -12,10 +12,29 @@ import axios from "axios";
 import { IoIosLogOut } from "react-icons/io";
 import { useEffect, useState } from "react";
 
+/**
+ * The main entry point of the application.
+ *
+ * This component renders the main layout of the application, including the
+ * header, main content, and footer. It also handles the search query and
+ * search results, as well as the login and logout process.
+ *
+ * @returns {JSX.Element} The main application component.
+ */
 function WorkoutBuddy() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+
+  /**
+   * Searches for buddies based on the current search query.
+   *
+   * This function makes an API call to retrieve buddies matching
+   * the search query and sets the search results state with the
+   * fetched data. If the search query is empty or an error occurs
+   * during the API call, no results will be set, and an error
+   * message will be logged.
+   */
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -43,10 +62,22 @@ function WorkoutBuddy() {
     }
   };
 
+  /**
+   * Clears the search input and search results
+   */
   const handleClearSearch = () => {
     setSearchQuery(""); // Clear the search input
     setSearchResults([]);
   };
+
+  /**
+   * Handles the user logout process.
+   *
+   * This function attempts to notify the server to invalidate the user's refresh token
+   * by sending a logout request. Upon successful server notification, it clears the
+   * access and refresh tokens from localStorage and redirects the user to the login page.
+   * If the logout process fails, an error message is logged to the console.
+   */
 
   const logoutHandler = async () => {
     try {
@@ -76,6 +107,17 @@ function WorkoutBuddy() {
   };
 
   useEffect(() => {
+    /**
+     * Attempts to retrieve the user's current geolocation and update it on the server.
+     *
+     * This function first checks if the browser supports geolocation. If supported, it requests
+     * the user's current position. Upon successfully obtaining the location, it sends a POST request
+     * to the server to update the user's location with the current latitude and longitude.
+     *
+     * Alerts the user if geolocation is unsupported, if an error occurs while fetching the location,
+     * or if there is any unexpected error during the process.
+     */
+
     const handleLocationClick = async () => {
       try {
         // Check if geolocation is supported
@@ -84,7 +126,7 @@ function WorkoutBuddy() {
           alert("Your browser does not support location services.");
           return;
         }
-  
+
         // Get user's current location
         navigator.geolocation.getCurrentPosition(
           async (position) => {
@@ -97,10 +139,12 @@ function WorkoutBuddy() {
               },
               {
                 headers: {
-                  Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                  Authorization: `Bearer ${localStorage.getItem(
+                    "accessToken"
+                  )}`,
                 },
               }
-            )
+            );
           },
           (error) => {
             console.error("Error getting location:", error.message);
@@ -115,7 +159,7 @@ function WorkoutBuddy() {
       }
     };
     handleLocationClick();
-  })
+  });
 
   return (
     <div>
@@ -305,7 +349,16 @@ function WorkoutBuddy() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap justify-between">
             <div className="w-full md:w-1/4 mb-8 md:mb-0">
-              <div className="text-white text-lg font-bold">Fitknight</div>
+              <div className="flex items-center w-1/6">
+                <img
+                  className="h-[50px] w-[50px] mr-2"
+                  src={logo}
+                  alt="Fitknight Logo"
+                />
+                <span className="text-red-500 text-xl font-extrabold">
+                  FITKNIGHT
+                </span>
+              </div>
               <div className="text-gray-500 text-sm mt-1">
                 WORKOUT COMPLETE™
               </div>

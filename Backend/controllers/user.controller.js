@@ -99,7 +99,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
   }
 
-  sendVerificationEmail(email, verificationToken);
+  //sendVerificationEmail(email, verificationToken);
 
   const user = await User.create({
     fullName,

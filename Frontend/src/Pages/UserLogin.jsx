@@ -55,6 +55,8 @@ const UserLogin = () => {
           // if (!data.data.user.isVerified) {
           //   navigate("/verify");
           // }
+
+          alert("Login successful");
           const userPreference = data.data.user.preference;
           if (userPreference === "FitnessGroup") {
             navigate("/FitnessGroup"); // Redirect to Fitness Group page

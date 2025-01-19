@@ -91,6 +91,7 @@ function FitnessGroup() {
       }
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+      alert("Logout successful");
       navigate("/userLogin");
     } catch (error) {
       console.error("Logout failed", error);

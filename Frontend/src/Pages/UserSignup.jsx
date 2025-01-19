@@ -93,6 +93,7 @@ const UserSignup = () => {
         // if (!data.user.isVerified) {
         //   navigate("/verify");
         // }
+        alert("Registration successful!");
 
         const userPreference = data.user.preference;
         if (userPreference === "FitnessGroup") {

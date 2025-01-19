@@ -130,7 +130,7 @@ const CreateGroup = () => {
 
       if (response.status === 200) {
         const data = response.data;
-        console.log("Group created:", data);
+        alert("Group created successfully");
         setGroup(data.data);
 
         // Navigate to the FitnessGroup page after successful creation

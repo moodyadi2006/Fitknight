@@ -98,6 +98,7 @@ function WorkoutBuddy() {
       // Clear tokens from localStorage
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+      alert("Logout successful");
 
       // Redirect to login page
       navigate("/userLogin");

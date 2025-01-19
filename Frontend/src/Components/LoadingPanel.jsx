@@ -13,11 +13,13 @@ const LoadingPanel = () => {
         />
         Your browser does not support the video tag.
       </video>
-      
+
       <div className="flex flex-col items-center justify-center space-y-6 p-8 rounded-lg bg-white bg-opacity-10 backdrop-blur-xl shadow-lg border border-white">
         <div className="relative">
+          {/* Outer Spinning Circle */}
           <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin-slow"></div>
-          <div className="absolute w-16 h-16 rounded-full border-4 border-dashed border-gray-400 animate-pulse"></div>
+          {/* Inner Spinning Circle */}
+          <div className="absolute w-16 h-16 rounded-full border-4 border-dashed border-gray-400 animate-spin-fast"></div>
         </div>
         <span className="text-white text-2xl font-extrabold animate-pulse">
           Loading...

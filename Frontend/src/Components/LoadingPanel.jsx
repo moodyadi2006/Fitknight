@@ -1,4 +1,5 @@
 import logo from "../assets/logo.png";
+
 const LoadingPanel = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center">
@@ -17,21 +18,25 @@ const LoadingPanel = () => {
 
       <div className="flex flex-col items-center justify-center space-y-6 p-8 rounded-lg bg-white bg-opacity-10 backdrop-blur-xl shadow-lg border border-white">
         <div className="flex justify-center items-center mb-6">
-            <img
-              className="h-[100px] w-[100px] mr-3"
-              src={logo}
-              alt="Fitknight Logo"
-            />
-            <span className="text-red-500 text-3xl font-extrabold">
-              FITKNIGHT
-            </span>
-          </div>
-        <div className="relative">
-          {/* Outer Spinning Circle */}
-          <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin-slow"></div>
-          {/* Inner Spinning Circle */}
-          <div className="absolute w-16 h-16 rounded-full border-4 border-dashed border-gray-400 animate-spin-fast"></div>
+          <img
+            className="h-[100px] w-[100px] mr-3"
+            src={logo}
+            alt="Fitknight Logo"
+          />
+          <span className="text-red-500 text-3xl font-extrabold">
+            FITKNIGHT
+          </span>
         </div>
+
+        {/* Spinning Circles */}
+        <div className="relative flex items-center justify-center h-20 w-20">
+          {/* Outer Circle */}
+          <div className="absolute w-20 h-20 border-t-4 border-blue-500 border-solid rounded-full animate-spin-slow"></div>
+          {/* Inner Circle */}
+          <div className="absolute w-16 h-16 border-4 border-dashed border-gray-400 rounded-full animate-spin-fast"></div>
+        </div>
+
+        {/* Loading Text */}
         <span className="text-white text-2xl font-extrabold animate-pulse">
           Loading...
         </span>

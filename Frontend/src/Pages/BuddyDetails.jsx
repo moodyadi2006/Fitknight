@@ -96,7 +96,7 @@ const BuddyDetails = () => {
 
   // Clean up the timeout
   return () => clearTimeout(timeout);
-}, [loggedInUser.username]);
+}, [loggedInUser.username, allMessages]);
 
 
   useEffect(() => {

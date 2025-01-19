@@ -1,3 +1,4 @@
+import logo from "../assets/logo.png";
 const LoadingPanel = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center">

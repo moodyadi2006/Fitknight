@@ -99,7 +99,7 @@ const GroupDetails = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
     // Scroll to the bottom whenever allMessages changes
-  }, [loggedInUser]);
+  }, [loggedInUser, allMessages]);
 
   useEffect(() => {
     socket.on("chatMessage", (message) => {

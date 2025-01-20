@@ -909,15 +909,6 @@ const JoinGroup = () => {
                         Undo Request
                       </button>
                     )}
-
-                    {group && loadingState[group._id] === "pending" && (
-                      <button
-                        onClick={() => undoRequestHandler(group._id)}
-                        className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
-                      >
-                        Undo Request
-                      </button>
-                    )}
                     {/* Send Request button */}
                     {group &&
                       loadingState[group._id] !== "accepted" &&
